@@ -1,7 +1,7 @@
 ;;; ert-results.el --- Filter ERT test results display   -*- lexical-binding: t; -*-
 ;; Usage:        GNU Emacs Lisp Library
 ;; Keywords:     lisp, maint, tools
-;; Version:      1.0.1
+;; Version:      1.0.2
 ;;
 ;; Author:       Robert Weiner <rsw@gnu.org>
 ;;
@@ -9,7 +9,7 @@
 ;; URL:              https://github.com/rswgnu/ert-results
 ;;
 ;; Orig-date:    28-Dec-23 at 14:52:30
-;; Last-Mod:     29-Dec-23 at 14:51:20 by Bob Weiner
+;; Last-Mod:      1-Jan-24 at 12:08:04 by Bob Weiner
 ;;
 ;; Copyright (C) 2023  Free Software Foundation, Inc.
 ;;
@@ -128,9 +128,15 @@ show/keep only entries that have that status."
 (defun ert-results-filter (&optional status-symbol)
   "Filter ert results entries to those matching optional STATUS-SYMBOL.
 If STATUS-SYMBOL is null, use the entry type at point (context-sensitive).
-If STATUS-SYMBOL is :selector (on the stats header Selector: line), toggle
+
+If STATUS-SYMBOL is :passed :failed or :skipped (on any of the
+Passed: Failed: or Skipped: header lines), only results with the
+associated status are shown.
+
+If STATUS-SYMBOL is :selector (on the header Selector: line), toggle
 showing/hiding all test results.
-If STATUS-SYMBOL is :total (on the stats header Total: line), toggle
+
+If STATUS-SYMBOL is :total (on the header Total: line), toggle
 showing/hiding all test results.
 
 Return STATUS-SYMBOL."
@@ -146,8 +152,7 @@ Return STATUS-SYMBOL."
 (defun ert-results-filter-status-p ()
   "Return the results status symbol for the current test entry, else return nil."
   (let ((status-symbol))
-    (and (featurep 'ert-display)
-	 (derived-mode-p 'ert-results-mode)
+    (and (derived-mode-p 'ert-results-mode)
 	 (or
 	  ;; on a stats line
 	  (save-excursion
