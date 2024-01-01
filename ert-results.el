@@ -1,15 +1,17 @@
 ;;; ert-results.el --- Filter ERT test results display   -*- lexical-binding: t; -*-
 ;; Usage:        GNU Emacs Lisp Library
 ;; Keywords:     lisp, maint, tools
-;; Version:      1.0.2
+;; Version:      1.0.3
 ;;
 ;; Author:       Robert Weiner <rsw@gnu.org>
 ;;
 ;; Package-Requires: ((emacs "24.1"))
 ;; URL:              https://github.com/rswgnu/ert-results
 ;;
-;; Orig-date:    28-Dec-23 at 14:52:30
-;; Last-Mod:      1-Jan-24 at 12:08:04 by Bob Weiner
+;; Orig-Date:    28-Dec-23 at 14:52:30
+;; Last-Mod:      1-Jan-24 at 23:58:17 by Bob Weiner
+;;
+;; SPDX-License-Identifier: GPL-3.0-or-later
 ;;
 ;; Copyright (C) 2023  Free Software Foundation, Inc.
 ;;
@@ -227,8 +229,10 @@ to the displayed test it was on, if any."
 ;;; Key bindings
 ;;; ************************************************************************
 
-(define-key ert-results-mode-map "f" 'ert-results-filter)
-(define-key ert-results-mode-map "t" 'ert-results-toggle)
+(unless (lookup-key ert-results-mode-map "f")
+  (define-key ert-results-mode-map "f" 'ert-results-filter))
+(unless (lookup-key ert-results-mode-map "t")
+  (define-key ert-results-mode-map "t" 'ert-results-toggle))
 
 (provide 'ert-results)
 ;;; ert-results.el ends here

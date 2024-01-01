@@ -1,0 +1,9 @@
+2024-01-01  Bob Weiner  <rsw@gnu.org>
+
+* ert-results.el: Add SPDX-License-Identifier and don't bind keys in
+    `ert-results-mode-map' if already bound when loading this library.
+
+2023-12-29  Robert Weiner  <rsw@gnu.org>
+
+* ert-results.el (ert-results-filter): Improve doc.
+
