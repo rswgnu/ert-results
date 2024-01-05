@@ -1,9 +1,12 @@
-2024-01-05  Bob Weiner  <rsw@gnu.org>
+2024-01-05  Robert Weiner  <rsw@gnu.org>
 
 * ert-results.el (ert-results-edebug): Add and bind to {e}.
                  (ert-results-filter-status-p): Add Aborted support.
+		 (ert-results-all-test-bodies)
+		 (ert-results-all-test-names, ert-results-all-test-tags)
+		 (ert-results--map-tests): Add all these functions.
 
-2024-01-01  Bob Weiner  <rsw@gnu.org>
+2024-01-01  Robert Weiner  <rsw@gnu.org>
 
 * ert-results.el: Add SPDX-License-Identifier and don't bind keys in
     `ert-results-mode-map' if already bound when loading this library.

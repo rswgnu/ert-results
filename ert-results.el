@@ -1,7 +1,7 @@
 ;;; ert-results.el --- Filter ERT test results display   -*- lexical-binding: t; -*-
 ;; Usage:        GNU Emacs Lisp Library
 ;; Keywords:     lisp, maint, tools
-;; Version:      1.0.4
+;; Version:      1.0.5
 ;;
 ;; Author:       Robert Weiner <rsw@gnu.org>
 ;;
@@ -9,7 +9,7 @@
 ;; URL:              https://github.com/rswgnu/ert-results
 ;;
 ;; Orig-Date:    28-Dec-23 at 14:52:30
-;; Last-Mod:      5-Jan-24 at 15:26:30 by Bob Weiner
+;; Last-Mod:      5-Jan-24 at 18:46:20 by Bob Weiner
 ;;
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 ;;
@@ -17,7 +17,7 @@
 ;;
 ;; Licensed under the GNU General Public License, version 3.
 ;;
-;; This file is not yet part of Emacs.  It requires Emacs 27.1 or above.
+;; This file is not yet part of Emacs.  It requires Emacs 24.1 or above.
 ;;
 ;;; Commentary:
 ;;
@@ -59,6 +59,12 @@
 ;;   `ert-results-show'     - show all test results
 ;;   `ert-results-display'  - show all test results; with prefix arg, hide
 ;;
+;; This library also provides these functions that map over all tests
+;; in the results buffer:
+;;   `ert-results-all-test-bodies' - get a list of test bodies in the buffer
+;;   `ert-results-all-test-names'  - get a list of test names in the buffer
+;;   `ert-results-all-test-tags'   - get a list of test tags in the buffer
+;;
 ;; To use:
 ;;
 ;;   Simply load some ERT tests, load this library, interactively run `ert'
@@ -66,7 +72,8 @@
 ;;   for ERT to output its summary line in the results buffer and then
 ;;   press {t} to see all of the tests that were run together with their
 ;;   final status and any errors.  Press {t} again to hide all this detail.
-;;   Press {f} to filter entries to the current context.
+;;   Press {f} to filter entries to the current context and {e} to edebug
+;;   a test at point.
 
 ;;; Code:
 
@@ -226,6 +233,18 @@ to the displayed test it was on, if any."
       (ert-results-hide)
     (ert-results-show)))
 
+(defun ert-results-all-test-bodies ()
+  "Return a list of the body of each test in a results buffer."
+  (ert-results--map-tests #'ert-test-body))
+
+(defun ert-results-all-test-names ()
+  "Return a list of the symbol for each test in a results buffer."
+  (ert-results--map-tests #'ert-test-name))
+
+(defun ert-results-all-test-tags ()
+  "Return a list of the tags associated with each test in a results buffer."
+  (ert-results--map-tests #'ert-test-tags))
+
 ;;; ************************************************************************
 ;;; Private functions
 ;;; ************************************************************************
@@ -240,6 +259,25 @@ to the displayed test it was on, if any."
     ("p" :passed)
     ("q" :quit)
     ("s" :skipped)))
+
+(defun ert-results--map-tests (func)
+  "In an ert results buffer, return result of applying FUNC over its tests.
+For example, to get all test names: (ert-results-map-tests #'ert-test-name)."
+  (if (not (derived-mode-p 'ert-results-mode))
+      (error "(ert-results-map-tests): Use only in an ERT results buffer")
+    (let ((ewoc ert--results-ewoc)
+	  node
+	  entry
+	  result
+	  results)
+      (ewoc--set-buffer-bind-dll ewoc
+	(setq node (ewoc-nth ewoc 0))
+	(while (and node (setq entry (ewoc-data node))
+		    (ert--ewoc-entry-p entry))
+	  (setq result (funcall func (ert--ewoc-entry-test entry))
+		results (cons result results)
+		node (ewoc--node-next dll node)))
+	results))))
 
 (defun ert-results--run-test-at-definition (test-name &optional edebug-it)
   "Eval and run the ert TEST-NAME defined at point.
