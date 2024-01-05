@@ -1,7 +1,7 @@
 ;;; ert-results.el --- Filter ERT test results display   -*- lexical-binding: t; -*-
 ;; Usage:        GNU Emacs Lisp Library
 ;; Keywords:     lisp, maint, tools
-;; Version:      1.0.3
+;; Version:      1.0.4
 ;;
 ;; Author:       Robert Weiner <rsw@gnu.org>
 ;;
@@ -9,7 +9,7 @@
 ;; URL:              https://github.com/rswgnu/ert-results
 ;;
 ;; Orig-Date:    28-Dec-23 at 14:52:30
-;; Last-Mod:      1-Jan-24 at 23:58:17 by Bob Weiner
+;; Last-Mod:      5-Jan-24 at 15:26:30 by Bob Weiner
 ;;
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 ;;
@@ -37,7 +37,11 @@
 ;; point is left on the summary item associated with the test that had
 ;; been at point, if any.
 ;;
-;; The second command, `ert-results-filter', is bound to {f} within
+;; The second command, `ert-results-debug', is bound to {e} within the
+;; ERT results buffer.  It reruns the test at point using the electric
+;; debugger, letting you single-step through your test definitions.
+;;
+;; The third command, `ert-results-filter', is bound to {f} within
 ;; the ERT results buffer.  It filters the results to just those entries
 ;; whose status matches that of the current entry.  Point may be on a
 ;; results entry or on a result character in the results summary.
@@ -86,8 +90,8 @@
 (defun ert-results-display (&optional hide-flag status-to-show)
   "Show all test names and results in the *ert* buffer.
 With optional prefix arg HIDE-FLAG non-nil, hide these instead.
-With optional STATUS-TO-SHOW symbol (one of :passed :failed :skipped),
-show/keep only entries that have that status."
+With optional STATUS-TO-SHOW symbol (one of :passed :failed
+:aborted :skipped), show/keep only entries with that status."
   (interactive "P" ert-results-mode)
   (when (boundp 'ert--results-ewoc)
     (let ((ewoc ert--results-ewoc)
@@ -127,12 +131,21 @@ show/keep only entries that have that status."
       (when result-num
 	(goto-char (+ progress-bar-begin result-num))))))
 
+(defun ert-results-edebug ()
+  "Re-run the test named at point with the edebugger."
+  (interactive nil ert-results-mode)
+  (let ((test-symbol (ert-test-at-point)))
+    (unless test-symbol
+      (user-error "No test at point"))
+    (ert-find-test-other-window test-symbol)
+    (ert-results--run-test-at-definition test-symbol t)))
+
 (defun ert-results-filter (&optional status-symbol)
   "Filter ert results entries to those matching optional STATUS-SYMBOL.
 If STATUS-SYMBOL is null, use the entry type at point (context-sensitive).
 
-If STATUS-SYMBOL is :passed :failed or :skipped (on any of the
-Passed: Failed: or Skipped: header lines), only results with the
+If STATUS-SYMBOL is :passed :failed :aborted or :skipped (on any of the
+Passed: Failed: Aborted. or Skipped: header lines), only results with the
 associated status are shown.
 
 If STATUS-SYMBOL is :selector (on the header Selector: line), toggle
@@ -140,6 +153,8 @@ showing/hiding all test results.
 
 If STATUS-SYMBOL is :total (on the header Total: line), toggle
 showing/hiding all test results.
+
+If STATUS-SYMBOL is :aborted (on the header Aborted. line), do nothing.
 
 Return STATUS-SYMBOL."
   (interactive nil ert-results-mode)
@@ -160,7 +175,8 @@ Return STATUS-SYMBOL."
 	  (save-excursion
 	    (beginning-of-line)
 	    (when (or (looking-at "\\(Passed\\|Failed\\|Skipped\\):[ \t]+[0-9]+$")
-		      (looking-at "\\(Selector\\|Total\\):[ \t]"))
+		      (looking-at "\\(Selector\\|Total\\):[ \t]")
+		      (looking-at "\\(Aborted\\)\\."))
 	      (setq status-symbol (intern-soft (concat ":" (downcase (match-string 1)))))))
 	  ;; in or after a test result line
 	  (setq status-symbol
@@ -182,7 +198,7 @@ Return STATUS-SYMBOL."
 		    (let ((progress-bar-begin ert--results-progress-bar-button-begin))
 		      (and (<= progress-bar-begin (point))
 			   (< (point) (button-end (button-at progress-bar-begin))))))
-	  (setq status-symbol (ert-results--char-str-to-status-symbol (char-to-string (char-after)))))))
+	    (setq status-symbol (ert-results--char-str-to-status-symbol (char-to-string (char-after)))))))
     status-symbol))
 
 (defun ert-results-hide ()
@@ -225,10 +241,30 @@ to the displayed test it was on, if any."
     ("q" :quit)
     ("s" :skipped)))
 
+(defun ert-results--run-test-at-definition (test-name &optional edebug-it)
+  "Eval and run the ert TEST-NAME defined at point.
+Assume point is on the text of the first line of an ert test def,
+With optional EDEBUG-IT non-nil, edebug the test when it is run."
+  (let ((test-sym (if (symbolp test-name) test-name (intern-soft test-name))))
+    ;; Ensure run the latest version of the test, either with the
+    ;; edebugger if already instrumented for it; otherwise, with the
+    ;; normal evaluator.
+    (if (and test-sym edebug-it)
+	(edebug-defun)
+      (eval-defun nil)
+      (setq test-sym (intern-soft test-name))
+      (when (and test-sym edebug-it)
+	(edebug-defun)))
+    (setq test-sym (intern-soft test-name))
+    (when (and test-sym (ert-test-boundp test-sym))
+      (ert test-sym))))
+
 ;;; ************************************************************************
 ;;; Key bindings
 ;;; ************************************************************************
 
+(unless (lookup-key ert-results-mode-map "e")
+  (define-key ert-results-mode-map "e" 'ert-results-edebug))
 (unless (lookup-key ert-results-mode-map "f")
   (define-key ert-results-mode-map "f" 'ert-results-filter))
 (unless (lookup-key ert-results-mode-map "t")
