@@ -1,5 +1,18 @@
 2024-01-05  Robert Weiner  <rsw@gnu.org>
 
+* ert-results.el (ert--results-buffer): Add.
+                 (ert-results--run-test-at-definition): Remove first
+    'test-name' argument and find it at point instead.  Simplify logic
+    and reuse any existing, matching test item in results buffer.
+                 (ert-results--goto-test-number,
+                  ert-results--all-test-numbers-and-names,
+                  ert-results--test-number): Add to jump to test defs
+    by test name and number in the ert results buffer.
+                 (ert-results--in-summary-bar-p): Add to test if pos or
+    point is within the status summary bar.
+
+2024-01-05  Robert Weiner  <rsw@gnu.org>
+
 * ert-results.el (ert-results-edebug): Add and bind to {e}.
                  (ert-results-filter-status-p): Add Aborted support.
 		 (ert-results-all-test-bodies)
