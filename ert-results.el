@@ -9,7 +9,7 @@
 ;; URL:              https://github.com/rswgnu/ert-results
 ;;
 ;; Orig-Date:    28-Dec-23 at 14:52:30
-;; Last-Mod:      6-Jan-24 at 12:05:20 by Bob Weiner
+;; Last-Mod:      8-Jan-24 at 13:58:02 by Bob Weiner
 ;;
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 ;;
@@ -323,7 +323,8 @@ Return nil otherwise."
 
 (defun ert-results--map-tests (func)
   "In an ert results buffer, return result of applying FUNC over its tests.
-For example, to get all test names: (ert-results-map-tests #'ert-test-name)."
+For example, to get all test names:
+  (ert-results-map-tests #\\='ert-test-name)"
   (unless (derived-mode-p 'ert-results-mode)
     (error "(ert-results-map-tests): Use only in an ERT results buffer"))
   (let ((ewoc ert--results-ewoc)
