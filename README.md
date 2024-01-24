@@ -45,7 +45,7 @@ To use the package after installing it and requiring it:
    line or on any test result to filter to results with associated statuses.
 
 7. On a test entry, press {r} to run any test, {e} to edebug a test or {d}
-   to run a test with `debug-on-error' enabled, which generates a backtrace
+   to run a test with `debug-on-error` enabled, which generates a backtrace
    if any error is encountered during the run.
 
 ### Usage Details
@@ -77,10 +77,10 @@ buffer.  It instruments the current version of the given test for
 electric debugging (edebugging) and then steps through it in the test
 source buffer with edebug.
 
-`{M-x ert-results-run RET}' works just like `ert-results-edebug' but
+`{M-x ert-results-run RET}` works just like `ert-results-edebug` but
 instead of edebugging, it simply runs the current version of the test.
 You can bind it yourself to {r} to replace ert's
-`ert-results-rerun-test-at-point' command if you prefer a single
+`ert-results-rerun-test-at-point` command if you prefer a single
 command that you can use in both the results buffer and test
 definitions.
 
@@ -96,9 +96,9 @@ And the following functions for programming:
 
     | Function                      | Operation                               |
 	|-------------------------------|-----------------------------------------|
-    | `ert-results-all-test-bodies' | get a list of test bodies in the buffer |
-    | `ert-results-all-test-names'  | get a list of test names in the buffer  |
-    | `ert-results-all-test-tags'   | get a list of test tags in the buffer   |
+    | `ert-results-all-test-bodies` | get a list of test bodies in the buffer |
+    | `ert-results-all-test-names`  | get a list of test names in the buffer  |
+    | `ert-results-all-test-tags`   | get a list of test tags in the buffer   |
 
 
 ## Rationale
